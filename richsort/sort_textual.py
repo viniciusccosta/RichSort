@@ -1,9 +1,7 @@
 import sys
-from typing import Any, Dict, List
+from typing import List
 
 from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
