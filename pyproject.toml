@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-richsort = "richsort.sort:main"
+richsort = "richsort.sort_rich:main"
 richsort-textual = "richsort.sort_textual:main"
 
 
