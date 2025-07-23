@@ -8,8 +8,13 @@ authors = [
 readme = "README.md"
 requires-python = "~3.13"
 dependencies = [
-    "rich (>=14.0.0,<15.0.0)"
+    "rich (>=14.0.0,<15.0.0)",
+    "textual (>=4.0.0,<5.0.0)"
 ]
+
+[project.scripts]
+richsort = "richsort.sort:main"
+richsort-textual = "richsort.sort_textual:main"
 
 
 [build-system]

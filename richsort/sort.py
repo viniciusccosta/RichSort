@@ -606,10 +606,15 @@ def bubble_sort(input_array: list[int]) -> list[int]:
     return array
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the Rich-based TUI application."""
     try:
         tui = SortTUI()
         tui.run()
     except KeyboardInterrupt:
         console.print("\n[bold green]👋 Obrigado por usar o RichSort![/]")
         sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
