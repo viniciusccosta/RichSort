@@ -75,7 +75,7 @@ class ExecutionPanel(ScrollableContainer):
     """Main panel for displaying algorithm execution."""
 
     execution_output = reactive("")
-    can_focus = True  # Make the panel focusable
+    # can_focus = True  # Make the panel focusable - but not via tab
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -117,7 +117,7 @@ class ExecutionPanel(ScrollableContainer):
             "• ↑↓: Navegar nas listas\n"
             "• Espaço: Selecionar item destacado\n"
             "• Enter: Focar no painel principal para rolar\n"
-            "• R/Esc: Resetar execução[/]"
+            # "• R/Esc: Resetar execução[/]"
         )
 
     def _render_ready_state(self) -> str:
@@ -145,9 +145,9 @@ class ExecutionPanel(ScrollableContainer):
                 self.current_test_case["array"]
             )
 
-    def reset_execution(self):
-        """Reset the execution."""
-        self.execution_output = ""
+    # def reset_execution(self):
+    #     """Reset the execution."""
+    #     self.execution_output = ""
 
     def _execute_bubble_sort_full(self, input_array: List[int]) -> str:
         """Executes bubble sort and returns the complete visualization."""
@@ -351,10 +351,10 @@ class RichSortApp(App):
 
     BINDINGS = [
         Binding("q", "quit", "Quit", priority=True),
-        Binding("tab", "cycle_focus", "Next Panel"),
-        Binding("shift+tab", "cycle_focus_reverse", "Previous Panel"),
-        Binding("r", "reset", "Reset"),
-        Binding("escape", "reset", "Reset"),
+        Binding("tab", "cycle_focus", "Next Panel", priority=True),
+        Binding("shift+tab", "cycle_focus_reverse", "Previous Panel", priority=True),
+        # Binding("r", "reset", "Reset"),
+        # Binding("escape", "reset", "Reset"),
         Binding("enter", "focus_execution", "Focus Main Panel", priority=True),
         Binding("space", "select_item", "Select Item"),
     ]
@@ -455,21 +455,32 @@ class RichSortApp(App):
     def action_focus_execution(self) -> None:
         """Focus on the execution panel for scrolling."""
         execution_panel = self.query_one("#execution", ExecutionPanel)
+        # Temporarily make it focusable and focus it
+        execution_panel.can_focus = True
         execution_panel.focus()
         self.notify(
             "Foco no painel principal - use ↑↓ para rolar", severity="information"
         )
 
     def action_cycle_focus(self) -> None:
-        """Cycle focus through all panels in order: algorithms -> test_cases -> execution -> algorithms..."""
+        """Cycle focus only between left panels: algorithms -> test_cases -> algorithms..."""
         current_focused = self.focused
 
-        # Define the focus order
+        # Define the focus order (only left panels)
         algorithms_list = self.query_one("#algorithms", AlgorithmList)
         test_cases_list = self.query_one("#test_cases", TestCaseList)
         execution_panel = self.query_one("#execution", ExecutionPanel)
 
-        focus_order = [algorithms_list, test_cases_list, execution_panel]
+        # Remove execution panel from tab cycle
+        execution_panel.can_focus = False
+
+        focus_order = [algorithms_list, test_cases_list]
+
+        # If we're currently on the execution panel, go to algorithms
+        if current_focused == execution_panel:
+            algorithms_list.focus()
+            self.notify("Foco: Algoritmos", severity="information")
+            return
 
         # Find current index and move to next
         try:
@@ -482,19 +493,28 @@ class RichSortApp(App):
         focus_order[next_index].focus()
 
         # Show which panel is now focused
-        panel_names = ["Algoritmos", "Casos de Teste", "Painel Principal"]
+        panel_names = ["Algoritmos", "Casos de Teste"]
         self.notify(f"Foco: {panel_names[next_index]}", severity="information")
 
     def action_cycle_focus_reverse(self) -> None:
-        """Cycle focus through all panels in reverse order."""
+        """Cycle focus only between left panels in reverse order: test_cases -> algorithms -> test_cases..."""
         current_focused = self.focused
 
-        # Define the focus order
+        # Define the focus order (only left panels)
         algorithms_list = self.query_one("#algorithms", AlgorithmList)
         test_cases_list = self.query_one("#test_cases", TestCaseList)
         execution_panel = self.query_one("#execution", ExecutionPanel)
 
-        focus_order = [algorithms_list, test_cases_list, execution_panel]
+        # Remove execution panel from tab cycle
+        execution_panel.can_focus = False
+
+        focus_order = [algorithms_list, test_cases_list]
+
+        # If we're currently on the execution panel, go to test cases
+        if current_focused == execution_panel:
+            test_cases_list.focus()
+            self.notify("Foco: Casos de Teste", severity="information")
+            return
 
         # Find current index and move to previous
         try:
@@ -507,7 +527,7 @@ class RichSortApp(App):
         focus_order[prev_index].focus()
 
         # Show which panel is now focused
-        panel_names = ["Algoritmos", "Casos de Teste", "Painel Principal"]
+        panel_names = ["Algoritmos", "Casos de Teste"]
         self.notify(f"Foco: {panel_names[prev_index]}", severity="information")
 
     def _update_execution_panel(self) -> None:
@@ -518,11 +538,11 @@ class RichSortApp(App):
                 self.selected_algorithm, self.selected_test_case
             )
 
-    def action_reset(self) -> None:
-        """Reset the execution."""
-        execution_panel = self.query_one("#execution", ExecutionPanel)
-        execution_panel.reset_execution()
-        self.notify("Execução resetada!", severity="information")
+    # def action_reset(self) -> None:
+    #     """Reset the execution."""
+    #     execution_panel = self.query_one("#execution", ExecutionPanel)
+    #     execution_panel.reset_execution()
+    #     self.notify("Execução resetada!", severity="information")
 
 
 def main():
