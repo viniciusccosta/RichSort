@@ -78,7 +78,7 @@ python -m richsort.sort_textual
 
 ## 🎮 Como Usar
 
-### Interface CLI (Rich)
+### Exemplo da Interface CLI (Rich)
 
 Simplesmente execute `richsort` e siga o menu interativo para:
 
@@ -86,7 +86,7 @@ Simplesmente execute `richsort` e siga o menu interativo para:
 - Escolher caso de teste
 - Visualizar a execução completa
 
-### Interface TUI (Textual)
+### Exemplo da Interface TUI (Textual)
 
 Execute `richsort-textual` e use os controles:
 
