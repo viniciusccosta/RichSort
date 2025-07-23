@@ -433,8 +433,7 @@ class RichSortApp(App):
                 self._update_execution_panel()
             else:
                 self.notify(
-                    "Este algoritmo ainda não foi implementado!",
-                    severity="warning",
+                    "Este algoritmo ainda não foi implementado!", severity="warning"
                 )
 
     def _select_test_case(self) -> None:
@@ -458,9 +457,9 @@ class RichSortApp(App):
         # Temporarily make it focusable and focus it
         execution_panel.can_focus = True
         execution_panel.focus()
-        self.notify(
-            "Foco no painel principal - use ↑↓ para rolar", severity="information"
-        )
+        # self.notify(
+        #     "Foco no painel principal - use ↑↓ para rolar", severity="information"
+        # )
 
     def action_cycle_focus(self) -> None:
         """Cycle focus only between left panels: algorithms -> test_cases -> algorithms..."""
@@ -479,7 +478,7 @@ class RichSortApp(App):
         # If we're currently on the execution panel, go to algorithms
         if current_focused == execution_panel:
             algorithms_list.focus()
-            self.notify("Foco: Algoritmos", severity="information")
+            # self.notify("Foco: Algoritmos", severity="information", timeout=1.0)
             return
 
         # Find current index and move to next
@@ -494,7 +493,9 @@ class RichSortApp(App):
 
         # Show which panel is now focused
         panel_names = ["Algoritmos", "Casos de Teste"]
-        self.notify(f"Foco: {panel_names[next_index]}", severity="information")
+        # self.notify(
+        #     f"Foco: {panel_names[next_index]}", severity="information", timeout=1.0
+        # )
 
     def action_cycle_focus_reverse(self) -> None:
         """Cycle focus only between left panels in reverse order: test_cases -> algorithms -> test_cases..."""
@@ -513,7 +514,7 @@ class RichSortApp(App):
         # If we're currently on the execution panel, go to test cases
         if current_focused == execution_panel:
             test_cases_list.focus()
-            self.notify("Foco: Casos de Teste", severity="information")
+            # self.notify("Foco: Casos de Teste", severity="information", timeout=1.0)
             return
 
         # Find current index and move to previous
@@ -528,7 +529,9 @@ class RichSortApp(App):
 
         # Show which panel is now focused
         panel_names = ["Algoritmos", "Casos de Teste"]
-        self.notify(f"Foco: {panel_names[prev_index]}", severity="information")
+        # self.notify(
+        #     f"Foco: {panel_names[prev_index]}", severity="information", timeout=1.0
+        # )
 
     def _update_execution_panel(self) -> None:
         """Update the execution panel with current selections."""
