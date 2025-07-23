@@ -9,6 +9,9 @@ from textual.containers import Container, Horizontal, ScrollableContainer, Verti
 from textual.reactive import reactive
 from textual.widgets import Footer, Header, ListItem, ListView, Static
 
+from .algorithms import get_algorithm_visualizer, get_available_algorithms
+from .test_cases import get_test_cases
+
 console = Console()
 
 
@@ -17,13 +20,7 @@ class AlgorithmList(ListView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.algorithms = [
-            {"name": "🫧 Bubble Sort", "id": "bubble", "implemented": True},
-            {"name": "🔄 Selection Sort", "id": "selection", "implemented": False},
-            {"name": "📍 Insertion Sort", "id": "insertion", "implemented": False},
-            {"name": "🚀 Quick Sort", "id": "quick", "implemented": False},
-            {"name": "🔀 Merge Sort", "id": "merge", "implemented": False},
-        ]
+        self.algorithms = get_available_algorithms()
 
     def compose(self) -> ComposeResult:
         for algo in self.algorithms:
@@ -40,28 +37,7 @@ class TestCaseList(ListView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.test_cases = [
-            {
-                "name": "🎲 Caso Aleatório",
-                "array": [10, 30, 20, 40, 5],
-                "description": "Array com elementos em ordem aleatória",
-            },
-            {
-                "name": "✅ Melhor Caso",
-                "array": [1, 2, 3, 4, 5],
-                "description": "Array já ordenado - mínimo de trocas",
-            },
-            {
-                "name": "❌ Pior Caso",
-                "array": [50, 40, 30, 20, 10],
-                "description": "Array em ordem decrescente - máximo de trocas",
-            },
-            {
-                "name": "🔄 Caso com Duplicatas",
-                "array": [3, 1, 4, 1, 5, 9, 2, 6],
-                "description": "Array com elementos repetidos",
-            },
-        ]
+        self.test_cases = get_test_cases()
 
     def compose(self) -> ComposeResult:
         for i, test_case in enumerate(self.test_cases):
@@ -137,118 +113,22 @@ class ExecutionPanel(ScrollableContainer):
         if not self.current_algorithm or not self.current_test_case:
             return
 
-        if "Bubble Sort" in self.current_algorithm:
-            self.execution_output = self._execute_bubble_sort_full(
-                self.current_test_case["array"]
-            )
-
-    def _execute_bubble_sort_full(self, input_array: List[int]) -> str:
-        """Executes bubble sort and returns the complete visualization."""
-        array = input_array.copy()
-        length = len(array)
-        comparisons = 0
-        swaps = 0
-
-        output = []
-
-        # Header
-        output.append("[bold cyan]🫧 BUBBLE SORT[/]")
-        output.append("")
-        output.append(f"[white]Array inicial:[/] {input_array}")
-        output.append(f"[white]Tamanho:[/] {length} elementos")
-        output.append("")
-        output.append("[dim]O Bubble Sort compara elementos adjacentes e os troca")
-        output.append("se estiverem fora de ordem.[/]")
-        output.append("─" * 60)
-        output.append("")
-
-        # Main sorting loops
-        for step in range(length):
-            output.append(
-                f"[bold blue]🔄 PASSO {step + 1}/{length}[/] - Estado atual: {array}"
-            )
-            if step == 0:
-                output.append(
-                    "[dim]💡 A cada passo, o maior elemento restante irá para sua posição final[/]"
-                )
-            output.append("")
-
-            houve_troca_no_passo = False
-
-            for index in range(length - step - 1):
-                elemento = array[index]
-                vizinho = array[index + 1]
-                comparisons += 1
-
-                output.append(
-                    f"    🔍 Comparando {elemento} (pos: {index}) com {vizinho} (pos: {index + 1})"
-                )
-
-                # Visual representation
-                visual_array = []
-                for i in range(length):
-                    if i == index:
-                        visual_array.append(f"[magenta on white] {array[i]} [/]")
-                    elif i == index + 1:
-                        visual_array.append(f"[cyan on white] {array[i]} [/]")
-                    elif i >= length - step:
-                        visual_array.append(f"[dim] {array[i]} [/]")
-                    else:
-                        visual_array.append(f"[white] {array[i]} [/]")
-
-                output.append(f"    Array: {' '.join(visual_array)}")
-
-                if step > 0:
-                    output.append(
-                        f"    [dim]Últimos {step} elementos já estão ordenados ✅[/]"
-                    )
-
-                # Perform comparison and swap
-                if elemento > vizinho:
-                    array[index], array[index + 1] = array[index + 1], array[index]
-                    swaps += 1
-                    houve_troca_no_passo = True
-                    output.append(f"    [green]✅ {elemento} > {vizinho} → TROCAR![/]")
-
-                    # Show result after swap
-                    visual_array_after = []
-                    for i in range(length):
-                        if i == index or i == index + 1:
-                            visual_array_after.append(
-                                f"[green on white] {array[i]} [/]"
-                            )
-                        elif i >= length - step:
-                            visual_array_after.append(f"[dim] {array[i]} [/]")
-                        else:
-                            visual_array_after.append(f"[white] {array[i]} [/]")
-
-                    output.append(f"    Resultado: {' '.join(visual_array_after)}")
-                else:
-                    output.append(f"    [red]❌ {elemento} ≤ {vizinho} → não trocar[/]")
-
-                output.append("")
-
-            if not houve_troca_no_passo:
-                output.append(
-                    "    [yellow]🎉 Nenhuma troca neste passo! Array pode estar ordenado.[/]"
-                )
+        # Extract algorithm ID from name
+        algorithm_id = None
+        algorithms = get_available_algorithms()
+        for algo in algorithms:
+            if algo["name"] in self.current_algorithm:
+                algorithm_id = algo["id"]
                 break
 
-            output.append("─" * 40)
-            output.append("")
-
-        # Final result
-        output.append("")
-        output.append("[bold green]🎉 ORDENAÇÃO CONCLUÍDA![/]")
-        output.append("")
-        output.append(f"[white]Array final:[/] [bold cyan]{array}[/]")
-        output.append("")
-        output.append("[white]📊 Estatísticas:[/]")
-        output.append(f"[white]  • Comparações:[/] [yellow]{comparisons}[/]")
-        output.append(f"[white]  • Trocas realizadas:[/] [yellow]{swaps}[/]")
-        output.append(f"[white]  • Complexidade:[/] O(n²) = O({length}²) = {length**2}")
-
-        return "\n".join(output)
+        if algorithm_id:
+            try:
+                visualizer = get_algorithm_visualizer(algorithm_id)
+                self.execution_output = visualizer.sort_complete(
+                    self.current_test_case["array"]
+                )
+            except (ValueError, NotImplementedError) as e:
+                self.execution_output = f"[red]Erro: {str(e)}[/]"
 
 
 class RichSortApp(App):

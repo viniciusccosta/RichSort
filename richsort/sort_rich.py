@@ -10,41 +10,16 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from .algorithms import get_algorithm_visualizer, get_available_algorithms
+from .test_cases import get_test_cases
+
 console = Console()
 
 
 class SortTUI:
     def __init__(self):
-        self.algorithms = [
-            {"name": "🫧 Bubble Sort", "id": "bubble", "implemented": True},
-            {"name": "🔄 Selection Sort", "id": "selection", "implemented": False},
-            {"name": "📍 Insertion Sort", "id": "insertion", "implemented": False},
-            {"name": "🚀 Quick Sort", "id": "quick", "implemented": False},
-            {"name": "🔀 Merge Sort", "id": "merge", "implemented": False},
-        ]
-
-        self.test_cases = [
-            {
-                "name": "🎲 Caso Aleatório",
-                "array": [10, 30, 20, 40, 5],
-                "description": "Array com elementos em ordem aleatória",
-            },
-            {
-                "name": "✅ Melhor Caso",
-                "array": [1, 2, 3, 4, 5],
-                "description": "Array já ordenado - mínimo de trocas",
-            },
-            {
-                "name": "❌ Pior Caso",
-                "array": [50, 40, 30, 20, 10],
-                "description": "Array em ordem decrescente - máximo de trocas",
-            },
-            {
-                "name": "🔄 Caso com Duplicatas",
-                "array": [3, 1, 4, 1, 5, 9, 2, 6],
-                "description": "Array com elementos repetidos",
-            },
-        ]
+        self.algorithms = get_available_algorithms()
+        self.test_cases = get_test_cases()
 
         self.selected_algorithm = 0
         self.selected_test_case = 0
@@ -171,181 +146,6 @@ class SortTUI:
             border_style="magenta",
         )
 
-    def generate_bubble_sort_steps(
-        self, input_array: List[int]
-    ) -> List[Dict[str, Any]]:
-        """Gera todos os passos do bubble sort para visualização"""
-        steps = []
-        array = input_array.copy()
-        length = len(array)
-        comparisons = 0
-        swaps = 0
-
-        # Passo inicial
-        steps.append(
-            {
-                "type": "start",
-                "content": self.create_step_content(
-                    f"🫧 BUBBLE SORT\n\n"
-                    f"Array inicial: {input_array}\n"
-                    f"Tamanho: {length} elementos\n\n"
-                    f"O Bubble Sort compara elementos adjacentes e os troca\n"
-                    f"se estiverem fora de ordem.",
-                    array,
-                    -1,
-                    -1,
-                    comparisons,
-                    swaps,
-                ),
-            }
-        )
-
-        # Iteração externa
-        for step in range(length):
-            steps.append(
-                {
-                    "type": "step_start",
-                    "content": self.create_step_content(
-                        f"PASSO {step + 1}/{length} - Estado atual",
-                        array,
-                        -1,
-                        -1,
-                        comparisons,
-                        swaps,
-                    ),
-                }
-            )
-
-            houve_troca_no_passo = False
-
-            # Iteração interna
-            for index in range(length - step - 1):
-                elemento = array[index]
-                vizinho = array[index + 1]
-                comparisons += 1
-
-                # Mostra comparação
-                steps.append(
-                    {
-                        "type": "comparison",
-                        "content": self.create_step_content(
-                            f"Comparando {elemento} (pos: {index}) com {vizinho} (pos: {index + 1})",
-                            array,
-                            index,
-                            index + 1,
-                            comparisons,
-                            swaps,
-                        ),
-                    }
-                )
-
-                # Executa troca se necessário
-                if elemento > vizinho:
-                    array[index], array[index + 1] = array[index + 1], array[index]
-                    swaps += 1
-                    houve_troca_no_passo = True
-
-                    steps.append(
-                        {
-                            "type": "swap",
-                            "content": self.create_step_content(
-                                f"✅ {elemento} > {vizinho} → TROCAR!",
-                                array,
-                                index,
-                                index + 1,
-                                comparisons,
-                                swaps,
-                                swapped=True,
-                            ),
-                        }
-                    )
-                else:
-                    steps.append(
-                        {
-                            "type": "no_swap",
-                            "content": self.create_step_content(
-                                f"❌ {elemento} ≤ {vizinho} → não trocar",
-                                array,
-                                index,
-                                index + 1,
-                                comparisons,
-                                swaps,
-                            ),
-                        }
-                    )
-
-            if not houve_troca_no_passo:
-                steps.append(
-                    {
-                        "type": "early_finish",
-                        "content": self.create_step_content(
-                            "🎉 Nenhuma troca neste passo! Array está ordenado.",
-                            array,
-                            -1,
-                            -1,
-                            comparisons,
-                            swaps,
-                        ),
-                    }
-                )
-                break
-
-        # Resultado final
-        steps.append(
-            {
-                "type": "final",
-                "content": self.create_step_content(
-                    f"🎉 ORDENAÇÃO CONCLUÍDA!\n\n"
-                    f"Array final: {array}\n\n"
-                    f"📊 Estatísticas:\n"
-                    f"  • Comparações: {comparisons}\n"
-                    f"  • Trocas: {swaps}\n"
-                    f"  • Complexidade: O(n²) = O({length}²) = {length**2}",
-                    array,
-                    -1,
-                    -1,
-                    comparisons,
-                    swaps,
-                ),
-            }
-        )
-
-        return steps
-
-    def create_step_content(
-        self,
-        description: str,
-        array: List[int],
-        highlight1: int = -1,
-        highlight2: int = -1,
-        comparisons: int = 0,
-        swaps: int = 0,
-        swapped: bool = False,
-    ) -> str:
-        """Cria o conteúdo visual de um passo"""
-        content = f"{description}\n\n"
-
-        # Array visual
-        visual_array = []
-        for i, val in enumerate(array):
-            if i == highlight1:
-                if swapped:
-                    visual_array.append(f"[green on white] {val} [/]")
-                else:
-                    visual_array.append(f"[magenta on white] {val} [/]")
-            elif i == highlight2:
-                if swapped:
-                    visual_array.append(f"[green on white] {val} [/]")
-                else:
-                    visual_array.append(f"[cyan on white] {val} [/]")
-            else:
-                visual_array.append(f"[white] {val} [/]")
-
-        content += f"Array: {' '.join(visual_array)}\n\n"
-        content += f"📊 Comparações: {comparisons} | Trocas: {swaps}"
-
-        return content
-
     def run(self):
         """Executa a TUI"""
         self.selected_panel = "algorithms"
@@ -461,149 +261,18 @@ class SortTUI:
             f"[yellow]Array inicial:[/] {self.test_cases[self.selected_test_case]['array']}\n"
         )
 
-        # Executa o bubble sort com visualização
-        bubble_sort(self.test_cases[self.selected_test_case]["array"])
+        # Execute algorithm using the shared algorithm module
+        algorithm_id = self.algorithms[self.selected_algorithm]["id"]
+        try:
+            visualizer = get_algorithm_visualizer(algorithm_id)
+            output = visualizer.sort_complete(
+                self.test_cases[self.selected_test_case]["array"]
+            )
+            console.print(output)
+        except (ValueError, NotImplementedError) as e:
+            console.print(f"[red]Erro: {str(e)}[/]")
 
         input("\n\nPressione Enter para voltar ao menu principal...")
-
-
-def bubble_sort(input_array: list[int]) -> list[int]:
-    """
-    Bubble Sort - O algoritmo de ordenação mais simples!
-
-    Como funciona:
-    1. Compara elementos adjacentes
-    2. Troca se estiverem fora de ordem
-    3. Repete até que nenhuma troca seja necessária
-
-    Complexidade: O(n²) no pior caso
-    """
-
-    # Copiando o array para não alterar o array original
-    array = input_array.copy()
-
-    # Tamanho total:
-    length = len(array)
-
-    # Estatísticas para fins didáticos
-    comparisons = 0
-    swaps = 0
-
-    # Cabeçalho explicativo
-    explanation = Panel(
-        "[bold cyan]🫧 BUBBLE SORT[/]\n\n"
-        "[white]O Bubble Sort compara elementos adjacentes e os troca se estiverem\n"
-        "fora de ordem. Como as bolhas que sobem na água, os elementos\n"
-        "maiores 'borbulham' para o final da lista.[/]\n\n"
-        f"[yellow]📊 Array inicial: {input_array}[/]\n"
-        f"[yellow]📏 Tamanho: {length} elementos[/]",
-        title="🎯 Algoritmo de Ordenação",
-        border_style="blue",
-    )
-    console.print(explanation)
-    console.print(f"Ordenando {array}...")
-
-    # Iteração externa:
-    for step in range(length):
-        console.print(
-            f"\n[bold blue]🔄 PASSO {step + 1}/{length}[/] - Estado atual: {array}"
-        )
-        if step == 0:
-            console.print(
-                "[dim]💡 A cada passo, o maior elemento restante irá para sua posição final[/]"
-            )
-
-        # Flag para detectar se houve trocas neste passo
-        houve_troca_no_passo = False
-
-        # Iteração interna (até o penúltimo elemento NÃO ordenado):
-        for index in range(length - step - 1):
-            # Elemento a ser analisado:
-            elemento = array[index]
-            comparisons += 1
-
-            console.print(
-                f"\n\t\t[white]🔍 Comparando {elemento} (pos: {index}) com seu vizinho...[/]"
-            )
-            visual_array = [
-                (
-                    f"[magenta on white]{array[i]}[/]"
-                    if i == index
-                    else (
-                        f"[cyan on white]{array[i]}[/]"
-                        if i == index + 1
-                        else (
-                            f"[dim]{array[i]}[/]"
-                            if i >= length - step
-                            else f"[white]{array[i]}[/]"
-                        )
-                    )
-                )
-                for i in range(length)
-            ]
-            console.print(f"\t\t\tArray: {visual_array}")
-            if step > 0:
-                console.print(
-                    f"\t\t\t[dim]Últimos {step} elementos já estão ordenados ✅[/]"
-                )
-
-            # Vizinho a ser comparado:
-            index_vizinho = index + 1
-            vizinho = array[index_vizinho]
-
-            # Comparação
-            trocou = False
-            if elemento > vizinho:
-                array[index], array[index + 1] = array[index + 1], array[index]
-                swaps += 1
-                trocou = True
-                houve_troca_no_passo = True
-                console.print(f"\t\t\t[green]✅ {elemento} > {vizinho} → TROCAR![/]")
-            else:
-                console.print(f"\t\t\t[red]❌ {elemento} ≤ {vizinho} → não trocar[/]")
-
-            # Array após iteração interna:
-            visual_array = []
-            for i in range(length):
-                if trocou and i == index:
-                    cor = "green on white"
-                elif trocou and i == index_vizinho:
-                    cor = "green on white"
-                elif i >= length - step:
-                    cor = "dim"
-                else:
-                    cor = "white"
-
-                visual_array.append(f"[{cor}]{array[i]}[/]")
-            console.print(f"\t\t\tResultado: {visual_array}")
-
-        if not houve_troca_no_passo:
-            console.print(
-                f"\n\t[yellow]🎉 Nenhuma troca neste passo! Array pode estar ordenado.[/]"
-            )
-
-        # # Otimização: se não houve trocas, o array já está ordenado
-        # if not houve_troca_no_passo:
-        #     if verbose:
-        #         console.print(
-        #             f"[bold green]✨ Array ordenado antes do tempo! Paramos aqui.[/]"
-        #         )
-        #     break
-
-    # Resultado:
-    console.print()
-    summary = Panel(
-        f"[bold green]🎉 ORDENAÇÃO CONCLUÍDA![/]\n\n"
-        f"[white]Array final: [bold cyan]{array}[/][/]\n\n"
-        f"[white]📊 Estatísticas:[/]\n"
-        f"[white]  • Comparações: [yellow]{comparisons}[/][/]\n"
-        f"[white]  • Trocas realizadas: [yellow]{swaps}[/][/]\n",
-        title="📈 Relatório Final",
-        border_style="green",
-    )
-    console.print(summary)
-
-    return array
 
 
 def main():
