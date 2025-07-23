@@ -5,7 +5,7 @@ This module contains the core sorting algorithm implementations that can be shar
 between different UI implementations (Rich CLI, Textual TUI, etc.).
 """
 
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, List
 
 
 class SortingVisualizer:
@@ -22,150 +22,7 @@ class SortingVisualizer:
 
 
 class BubbleSortVisualizer(SortingVisualizer):
-    """Bubble Sort algorithm with step-by-step visualization."""
-
-    def sort_with_steps(
-        self, input_array: List[int]
-    ) -> Generator[Dict[str, Any], None, None]:
-        """
-        Executes bubble sort and yields each step for visualization.
-
-        Args:
-            input_array: The array to sort
-
-        Yields:
-            Dict containing step information with keys:
-            - type: str (start, step_start, comparison, swap, no_swap, early_finish, final)
-            - description: str
-            - array: List[int] (current state)
-            - highlight_indices: List[int] (indices to highlight)
-            - comparisons: int
-            - swaps: int
-            - metadata: Dict (additional info)
-        """
-        self.reset_stats()
-        array = input_array.copy()
-        length = len(array)
-
-        # Initial step
-        yield {
-            "type": "start",
-            "description": "🫧 BUBBLE SORT",
-            "array": array.copy(),
-            "highlight_indices": [],
-            "comparisons": self.comparisons,
-            "swaps": self.swaps,
-            "metadata": {
-                "original_array": input_array,
-                "length": length,
-                "explanation": "O Bubble Sort compara elementos adjacentes e os troca se estiverem fora de ordem.",
-            },
-        }
-
-        # Main sorting loops
-        for step in range(length):
-            yield {
-                "type": "step_start",
-                "description": f"PASSO {step + 1}/{length} - Estado atual",
-                "array": array.copy(),
-                "highlight_indices": [],
-                "comparisons": self.comparisons,
-                "swaps": self.swaps,
-                "metadata": {
-                    "step": step + 1,
-                    "total_steps": length,
-                    "tip": (
-                        "💡 A cada passo, o maior elemento restante irá para sua posição final"
-                        if step == 0
-                        else None
-                    ),
-                },
-            }
-
-            houve_troca_no_passo = False
-
-            for index in range(length - step - 1):
-                elemento = array[index]
-                vizinho = array[index + 1]
-                self.comparisons += 1
-
-                # Show comparison
-                yield {
-                    "type": "comparison",
-                    "description": f"Comparando {elemento} (pos: {index}) com {vizinho} (pos: {index + 1})",
-                    "array": array.copy(),
-                    "highlight_indices": [index, index + 1],
-                    "comparisons": self.comparisons,
-                    "swaps": self.swaps,
-                    "metadata": {
-                        "comparing_values": [elemento, vizinho],
-                        "comparing_indices": [index, index + 1],
-                        "sorted_elements": step,
-                    },
-                }
-
-                # Perform swap if needed
-                if elemento > vizinho:
-                    array[index], array[index + 1] = array[index + 1], array[index]
-                    self.swaps += 1
-                    houve_troca_no_passo = True
-
-                    yield {
-                        "type": "swap",
-                        "description": f"✅ {elemento} > {vizinho} → TROCAR!",
-                        "array": array.copy(),
-                        "highlight_indices": [index, index + 1],
-                        "comparisons": self.comparisons,
-                        "swaps": self.swaps,
-                        "metadata": {
-                            "swapped_values": [elemento, vizinho],
-                            "swapped_indices": [index, index + 1],
-                            "sorted_elements": step,
-                        },
-                    }
-                else:
-                    yield {
-                        "type": "no_swap",
-                        "description": f"❌ {elemento} ≤ {vizinho} → não trocar",
-                        "array": array.copy(),
-                        "highlight_indices": [index, index + 1],
-                        "comparisons": self.comparisons,
-                        "swaps": self.swaps,
-                        "metadata": {
-                            "compared_values": [elemento, vizinho],
-                            "compared_indices": [index, index + 1],
-                            "sorted_elements": step,
-                        },
-                    }
-
-            if not houve_troca_no_passo:
-                yield {
-                    "type": "early_finish",
-                    "description": "🎉 Nenhuma troca neste passo! Array está ordenado.",
-                    "array": array.copy(),
-                    "highlight_indices": [],
-                    "comparisons": self.comparisons,
-                    "swaps": self.swaps,
-                    "metadata": {"early_termination": True},
-                }
-                break
-
-        # Final result
-        yield {
-            "type": "final",
-            "description": "🎉 ORDENAÇÃO CONCLUÍDA!",
-            "array": array.copy(),
-            "highlight_indices": [],
-            "comparisons": self.comparisons,
-            "swaps": self.swaps,
-            "metadata": {
-                "original_array": input_array,
-                "final_array": array,
-                "total_comparisons": self.comparisons,
-                "total_swaps": self.swaps,
-                "complexity": f"O(n²) = O({length}²) = {length**2}",
-            },
-        }
+    """Bubble Sort algorithm with visualization."""
 
     def sort_complete(self, input_array: List[int]) -> str:
         """
@@ -177,84 +34,91 @@ class BubbleSortVisualizer(SortingVisualizer):
         Returns:
             Complete Rich-formatted string with the full sorting process
         """
+        self.reset_stats()
+        array = input_array.copy()
+        length = len(array)
         output = []
 
-        for step in self.sort_with_steps(input_array):
-            if step["type"] == "start":
-                output.append(f"[bold cyan]{step['description']}[/]")
-                output.append("")
-                output.append(
-                    f"[white]Array inicial:[/] {step['metadata']['original_array']}"
-                )
-                output.append(
-                    f"[white]Tamanho:[/] {step['metadata']['length']} elementos"
-                )
-                output.append("")
-                output.append(f"[dim]{step['metadata']['explanation']}[/]")
-                output.append("─" * 60)
-                output.append("")
+        # Header
+        output.append("[bold cyan]🫧 BUBBLE SORT[/]")
+        output.append("")
+        output.append(f"[white]Array inicial:[/] {input_array}")
+        output.append(f"[white]Tamanho:[/] {length} elementos")
+        output.append("")
+        output.append("[dim]O Bubble Sort compara elementos adjacentes e os troca")
+        output.append("se estiverem fora de ordem.[/]")
+        output.append("─" * 60)
+        output.append("")
 
-            elif step["type"] == "step_start":
+        # Main sorting loops
+        for step in range(length):
+            output.append(
+                f"[bold blue]🔄 PASSO {step + 1}/{length}[/] - Estado atual: {array}"
+            )
+            if step == 0:
                 output.append(
-                    f"[bold blue]🔄 {step['description']}[/]: {step['array']}"
+                    "[dim]💡 A cada passo, o maior elemento restante irá para sua posição final[/]"
                 )
-                if step["metadata"].get("tip"):
-                    output.append(f"[dim]{step['metadata']['tip']}[/]")
-                output.append("")
+            output.append("")
 
-            elif step["type"] == "comparison":
-                output.append(f"    🔍 {step['description']}")
+            houve_troca_no_passo = False
+
+            for index in range(length - step - 1):
+                elemento = array[index]
+                vizinho = array[index + 1]
+                self.comparisons += 1
+
+                output.append(
+                    f"    🔍 Comparando {elemento} (pos: {index}) com {vizinho} (pos: {index + 1})"
+                )
 
                 # Visual representation
                 visual_array = self._create_visual_array(
-                    step["array"],
-                    step["highlight_indices"],
-                    step["metadata"]["sorted_elements"],
+                    array, [index, index + 1], step
                 )
                 output.append(f"    Array: {' '.join(visual_array)}")
 
-                if step["metadata"]["sorted_elements"] > 0:
+                if step > 0:
                     output.append(
-                        f"    [dim]Últimos {step['metadata']['sorted_elements']} elementos já estão ordenados ✅[/]"
+                        f"    [dim]Últimos {step} elementos já estão ordenados ✅[/]"
                     )
 
-            elif step["type"] == "swap":
-                output.append(f"    [green]{step['description']}[/]")
+                # Perform comparison and swap
+                if elemento > vizinho:
+                    array[index], array[index + 1] = array[index + 1], array[index]
+                    self.swaps += 1
+                    houve_troca_no_passo = True
+                    output.append(f"    [green]✅ {elemento} > {vizinho} → TROCAR![/]")
 
-                # Show result after swap
-                visual_array_after = self._create_visual_array(
-                    step["array"],
-                    step["highlight_indices"],
-                    step["metadata"]["sorted_elements"],
-                    swap_highlight=True,
+                    # Show result after swap
+                    visual_array_after = self._create_visual_array(
+                        array, [index, index + 1], step, swap_highlight=True
+                    )
+                    output.append(f"    Resultado: {' '.join(visual_array_after)}")
+                else:
+                    output.append(f"    [red]❌ {elemento} ≤ {vizinho} → não trocar[/]")
+
+                output.append("")
+
+            if not houve_troca_no_passo:
+                output.append(
+                    "    [yellow]🎉 Nenhuma troca neste passo! Array pode estar ordenado.[/]"
                 )
-                output.append(f"    Resultado: {' '.join(visual_array_after)}")
-                output.append("")
-
-            elif step["type"] == "no_swap":
-                output.append(f"    [red]{step['description']}[/]")
-                output.append("")
-
-            elif step["type"] == "early_finish":
-                output.append(f"    [yellow]{step['description']}[/]")
                 break
 
-            elif step["type"] == "final":
-                output.append("")
-                output.append(f"[bold green]{step['description']}[/]")
-                output.append("")
-                output.append(f"[white]Array final:[/] [bold cyan]{step['array']}[/]")
-                output.append("")
-                output.append("[white]📊 Estatísticas:[/]")
-                output.append(
-                    f"[white]  • Comparações:[/] [yellow]{step['comparisons']}[/]"
-                )
-                output.append(
-                    f"[white]  • Trocas realizadas:[/] [yellow]{step['swaps']}[/]"
-                )
-                output.append(
-                    f"[white]  • Complexidade:[/] {step['metadata']['complexity']}"
-                )
+            output.append("─" * 40)
+            output.append("")
+
+        # Final result
+        output.append("")
+        output.append("[bold green]🎉 ORDENAÇÃO CONCLUÍDA![/]")
+        output.append("")
+        output.append(f"[white]Array final:[/] [bold cyan]{array}[/]")
+        output.append("")
+        output.append("[white]📊 Estatísticas:[/]")
+        output.append(f"[white]  • Comparações:[/] [yellow]{self.comparisons}[/]")
+        output.append(f"[white]  • Trocas realizadas:[/] [yellow]{self.swaps}[/]")
+        output.append(f"[white]  • Complexidade:[/] O(n²) = O({length}²) = {length**2}")
 
         return "\n".join(output)
 
