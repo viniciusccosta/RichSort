@@ -322,6 +322,182 @@ class SelectionSortVisualizer(SortingVisualizer):
         return visual_array
 
 
+class InsertionSortVisualizer(SortingVisualizer):
+    """Insertion Sort algorithm with visualization.
+
+    Esta é uma versão didática do Insertion Sort que destaca como cada elemento é inserido na posição correta. Em vez de apenas deslocar os maiores valores para a direita, como na implementação clássica, aqui o elemento atual é trocado repetidamente com seus vizinhos à esquerda até alcançar o lugar ideal — lembrando visualmente o Bubble Sort.
+    Embora menos eficiente por envolver mais trocas, essa abordagem facilita o entendimento: o movimento do elemento é mais explícito, e os estados intermediários do array se tornam mais claros. Isso evita a confusão comum da versão tradicional, onde os deslocamentos podem criar duplicações temporárias difíceis de interpretar para iniciantes.
+    """
+
+    def sort_complete(self, input_array: List[int]) -> str:
+        """
+        Execute insertion sort and return complete Rich-formatted visualization.
+
+        Args:
+            input_array: The array to sort
+
+        Returns:
+            Complete Rich-formatted string with the full sorting process
+        """
+        self.reset_stats()
+        array = input_array.copy()
+        length = len(array)
+        output = []
+
+        # Header
+        output.append("[bold cyan]📍 INSERTION SORT[/]")
+        output.append("")
+        output.append(f"[white]Array inicial:[/] {input_array}")
+        output.append(f"[white]Tamanho:[/] {length} elementos")
+        output.append("")
+        output.append("[dim]O Insertion Sort insere cada elemento")
+        output.append("na posição correta fazendo trocas com elementos maiores.[/]")
+        output.append("─" * 60)
+        output.append("")
+
+        # Main sorting loop - começamos do segundo elemento
+        for cur_index in range(1, length):
+            cur_value = array[cur_index]
+
+            output.append(
+                f"[bold blue]🔄 PASSO {cur_index}/{length - 1}[/] - Inserindo {cur_value} na posição correta"
+            )
+            if cur_index == 1:
+                output.append(
+                    "[dim]💡 A cada passo, inserimos o elemento atual na posição correta à esquerda[/]"
+                )
+            output.append("")
+
+            output.append(
+                f"    🎯 Elemento a inserir: {cur_value} (posição {cur_index})"
+            )
+
+            # Show initial state
+            visual_array = self._create_visual_array_insertion(
+                array, cur_index, cur_index, length
+            )
+            output.append(f"    Array inicial: {' '.join(visual_array)}")
+            output.append("")
+
+            current_pos = cur_index
+            swaps_in_step = 0
+
+            # Enquanto há elementos à esquerda maiores que o valor atual
+            while current_pos > 0 and array[current_pos - 1] > cur_value:
+                self.comparisons += 1
+
+                output.append(
+                    f"    🔍 Comparando {cur_value} com {array[current_pos - 1]} (pos {current_pos - 1})"
+                )
+                output.append(
+                    f"    [green]✅ {array[current_pos - 1]} > {cur_value} → TROCAR![/]"
+                )
+
+                # Show before swap
+                visual_before = self._create_visual_array_insertion(
+                    array,
+                    cur_index,
+                    current_pos,
+                    length,
+                    show_swap_positions=[current_pos - 1, current_pos],
+                )
+                output.append(f"    Antes:  {' '.join(visual_before)}")
+
+                # Perform swap
+                array[current_pos], array[current_pos - 1] = (
+                    array[current_pos - 1],
+                    array[current_pos],
+                )
+                self.swaps += 1
+                swaps_in_step += 1
+
+                # Show after swap
+                visual_after = self._create_visual_array_insertion(
+                    array, cur_index, current_pos - 1, length, show_result=True
+                )
+                output.append(f"    Depois: {' '.join(visual_after)}")
+                output.append("")
+
+                current_pos -= 1
+
+            # Final comparison if we stopped
+            if current_pos > 0:
+                self.comparisons += 1
+                output.append(
+                    f"    🔍 Comparando {cur_value} com {array[current_pos - 1]} (pos {current_pos - 1})"
+                )
+                output.append(
+                    f"    [red]❌ {array[current_pos - 1]} ≤ {cur_value} → posição encontrada![/]"
+                )
+                output.append("")
+
+            # Summary of this step
+            if swaps_in_step > 0:
+                output.append(
+                    f"    [yellow]📍 Elemento {cur_value} inserido na posição {current_pos} após {swaps_in_step} trocas[/]"
+                )
+            else:
+                output.append(
+                    f"    [green]✅ Elemento {cur_value} já estava na posição correta![/]"
+                )
+
+            if cur_index > 1:
+                output.append(
+                    f"    [dim]Primeiros {cur_index + 1} elementos já estão ordenados ✅[/]"
+                )
+
+            output.append("─" * 40)
+            output.append("")
+
+        # Final result
+        output.append("")
+        output.append("[bold green]🎉 ORDENAÇÃO CONCLUÍDA![/]")
+        output.append("")
+        output.append(f"[white]Array final:[/] [bold cyan]{array}[/]")
+        output.append("")
+        output.append("[white]📊 Estatísticas:[/]")
+        output.append(f"[white]  • Comparações:[/] [yellow]{self.comparisons}[/]")
+        output.append(f"[white]  • Trocas realizadas:[/] [yellow]{self.swaps}[/]")
+        output.append(f"[white]  • Complexidade:[/] O(n²) = O({length}²) = {length**2}")
+
+        return "\n".join(output)
+
+    def _create_visual_array_insertion(
+        self,
+        array: List[int],
+        original_pos: int,
+        current_pos: int,
+        length: int,
+        show_swap_positions: List[int] = None,
+        show_result: bool = False,
+    ) -> List[str]:
+        """Create visual representation of array for insertion sort."""
+        visual_array = []
+        show_swap_positions = show_swap_positions or []
+
+        for i, val in enumerate(array):
+            if show_result and i == current_pos:
+                # Show element in its new correct position
+                visual_array.append(f"[bold green on white] {val} [/]")
+            elif show_swap_positions and i in show_swap_positions:
+                # Show elements being swapped
+                visual_array.append(f"[yellow on blue] {val} [/]")
+            elif i == current_pos:
+                # Current position of the element being inserted
+                visual_array.append(f"[bold blue on white] {val} [/]")
+            elif i == original_pos and i != current_pos:
+                # Original position (if different from current)
+                visual_array.append(f"[magenta on white] {val} [/]")
+            elif i < original_pos:
+                # Already sorted portion
+                visual_array.append(f"[dim green] {val} [/]")
+            else:
+                # Unsorted portion
+                visual_array.append(f"[white] {val} [/]")
+
+        return visual_array
+
+
 # Algorithm registry
 ALGORITHMS = {
     "bubble": {
@@ -336,8 +512,8 @@ ALGORITHMS = {
     },
     "insertion": {
         "name": "📍 Insertion Sort",
-        "visualizer": None,
-        "implemented": False,
+        "visualizer": InsertionSortVisualizer,
+        "implemented": True,
     },
     "quick": {"name": "🚀 Quick Sort", "visualizer": None, "implemented": False},
     "merge": {"name": "🔀 Merge Sort", "visualizer": None, "implemented": False},
