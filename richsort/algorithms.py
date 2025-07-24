@@ -325,8 +325,20 @@ class SelectionSortVisualizer(SortingVisualizer):
 class InsertionSortVisualizer(SortingVisualizer):
     """Insertion Sort algorithm with visualization.
 
-    Esta é uma versão didática do Insertion Sort que destaca como cada elemento é inserido na posição correta. Em vez de apenas deslocar os maiores valores para a direita, como na implementação clássica, aqui o elemento atual é trocado repetidamente com seus vizinhos à esquerda até alcançar o lugar ideal — lembrando visualmente o Bubble Sort.
-    Embora menos eficiente por envolver mais trocas, essa abordagem facilita o entendimento: o movimento do elemento é mais explícito, e os estados intermediários do array se tornam mais claros. Isso evita a confusão comum da versão tradicional, onde os deslocamentos podem criar duplicações temporárias difíceis de interpretar para iniciantes.
+    Esta é uma versão didática do Insertion Sort que destaca como cada elemento é inserido na posição correta.
+
+    Em vez de apenas deslocar os maiores valores para a direita,
+    como na implementação clássica,
+    aqui o elemento atual é trocado repetidamente com seus vizinhos à esquerda até alcançar o lugar ideal,
+    lembrando visualmente o Bubble Sort.
+
+    Embora menos eficiente, por envolver mais trocas,
+    essa abordagem facilita o entendimento:
+    o movimento do elemento é mais explícito, e os estados intermediários do array se tornam mais claros.
+
+    Isso evita a confusão comum da versão tradicional,
+    onde os deslocamentos podem criar duplicações temporárias
+    difíceis de interpretar para iniciantes.
     """
 
     def sort_complete(self, input_array: List[int]) -> str:
