@@ -24,7 +24,7 @@ class SortingVisualizer:
 class BubbleSortVisualizer(SortingVisualizer):
     """Bubble Sort algorithm with visualization."""
 
-    def sort_complete(self, input_array: List[int]) -> str:
+    def execute_bubble_sort(self, input_array: List[int]) -> str:
         """
         Execute bubble sort and return complete Rich-formatted visualization.
 
@@ -51,56 +51,64 @@ class BubbleSortVisualizer(SortingVisualizer):
         output.append("")
 
         # Main sorting loops
-        for step in range(length):
+        for iteration in range(length):
             output.append(
-                f"[bold blue]🔄 PASSO {step + 1}/{length}[/] - Estado atual: {array}"
+                f"[bold blue]🔄 PASSO {iteration + 1}/{length}[/] - Estado atual: {array}"
             )
-            if step == 0:
+            if iteration == 0:
                 output.append(
                     "[dim]💡 A cada passo, o maior elemento restante irá para sua posição final[/]"
                 )
             output.append("")
 
-            houve_troca_no_passo = False
+            swapped = False
+            for index in range(length - iteration - 1):
+                # "-1" porque precisamos pegar o elemento adjacente (index + 1)
+                # "-iteration" porque a cada iteração um novo elemento já estará ordenado no final do array
 
-            for index in range(length - step - 1):
-                elemento = array[index]
-                vizinho = array[index + 1]
+                cur_element = array[index]
+                adj_element = array[index + 1]
                 self.comparisons += 1
 
                 output.append(
-                    f"    🔍 Comparando {elemento} (pos: {index}) com {vizinho} (pos: {index + 1})"
+                    f"    🔍 Comparando {cur_element} (pos: {index}) com {adj_element} (pos: {index + 1})"
                 )
 
                 # Visual representation
                 visual_array = self._create_visual_array(
-                    array, [index, index + 1], step
+                    array, [index, index + 1], iteration
                 )
                 output.append(f"    Array: {' '.join(visual_array)}")
 
-                if step > 0:
+                if iteration > 0:
                     output.append(
-                        f"    [dim]Últimos {step} elementos já estão ordenados ✅[/]"
+                        f"    [dim]Últimos {iteration} elementos já estão ordenados ✅[/]"
                     )
 
                 # Perform comparison and swap
-                if elemento > vizinho:
+                if cur_element > adj_element:
+                    # Swap:
                     array[index], array[index + 1] = array[index + 1], array[index]
+
+                    # Output and statistics
                     self.swaps += 1
-                    houve_troca_no_passo = True
-                    output.append(f"    [green]✅ {elemento} > {vizinho} → TROCAR![/]")
+                    swapped = True
+                    output.append(
+                        f"    [green]✅ {cur_element} > {adj_element} → TROCAR![/]"
+                    )
 
                     # Show result after swap
                     visual_array_after = self._create_visual_array(
-                        array, [index, index + 1], step, swap_highlight=True
+                        array, [index, index + 1], iteration, swap_highlight=True
                     )
                     output.append(f"    Resultado: {' '.join(visual_array_after)}")
                 else:
-                    output.append(f"    [red]❌ {elemento} ≤ {vizinho} → não trocar[/]")
-
+                    output.append(
+                        f"    [red]❌ {cur_element} ≤ {adj_element} → não trocar[/]"
+                    )
                 output.append("")
 
-            if not houve_troca_no_passo:
+            if not swapped:
                 output.append(
                     "    [yellow]🎉 Nenhuma troca neste passo! Array pode estar ordenado.[/]"
                 )
